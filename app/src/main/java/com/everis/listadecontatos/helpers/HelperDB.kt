@@ -3,6 +3,7 @@ package com.everis.listadecontatos.helpers
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.everis.listadecontatos.feature.listacontatos.model.ContatosVO
 
 class HelperDB(
     context: Context
@@ -12,6 +13,7 @@ class HelperDB(
         private val NOME_BANCO = "contato.db"
         private val VERSAO_ATUAL = 1
     }
+
     val TABLE_NAME = "contato"
 
     val DROP_TABLE = "DROP TABLE IF EXISTS $TABLE_NAME"
@@ -26,6 +28,7 @@ class HelperDB(
             "" +
             "PRIMARY KEY($COLUMNS_ID AUTOINCREMENT)" +
             ")"
+
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(CREATE_TABLE)
     }
@@ -35,5 +38,26 @@ class HelperDB(
             db?.execSQL(DROP_TABLE)
         }
         onCreate(db)
+    }
+
+    fun buscarContatos(busca: String): List<ContatosVO> {
+        val db = readableDatabase ?: return mutableListOf()
+        var lista = mutableListOf<ContatosVO>()
+        val sql = "SELECT * FROM $TABLE_NAME"
+        var cursor = db.rawQuery(sql, arrayOf()) ?: return mutableListOf()
+        while (cursor.moveToNext()) {
+            var contato = ContatosVO(
+                cursor.getInt(cursor.getColumnIndex(COLUMNS_ID)),
+                cursor.getString(cursor.getColumnIndex(COLUMNS_NOME)),
+                cursor.getString(cursor.getColumnIndex(COLUMNS_TELEFONE))
+            )
+            lista.add(contato)
+        }
+
+        return lista
+    }
+
+    fun salvarContato(contato: ContatosVO) {
+
     }
 }
