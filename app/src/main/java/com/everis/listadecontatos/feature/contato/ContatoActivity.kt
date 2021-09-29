@@ -29,29 +29,31 @@ class ContatoActivity : BaseActivity() {
             btnExcluirContato.visibility = View.GONE
             return
         }
-        etNome.setText(ContatoSingleton.lista[index].nome)
-        etTelefone.setText(ContatoSingleton.lista[index].telefone)
+        var lista = ContatoApplication.instance.helperDB?.buscarContatos("$index", true) ?: return
+        var contato = lista.getOrNull(0) ?: return
+        etNome.setText(contato.nome)
+        etTelefone.setText(contato.telefone)
     }
 
     private fun onClickSalvarContato(){
         val nome = etNome.text.toString()
         val telefone = etTelefone.text.toString()
         val contato = ContatosVO(
-            0,
+            index,
             nome,
             telefone
         )
         if(index == -1) {
             ContatoApplication.instance.helperDB?.salvarContato(contato)
         }else{
-           // ContatoSingleton.lista.set(index,contato)
+            ContatoApplication.instance.helperDB?.updateContato(contato)
         }
         finish()
     }
 
     fun onClickExcluirContato(view: View) {
         if(index > -1){
-            ContatoSingleton.lista.removeAt(index)
+            ContatoApplication.instance.helperDB?.deletarContato(index)
             finish()
         }
     }
