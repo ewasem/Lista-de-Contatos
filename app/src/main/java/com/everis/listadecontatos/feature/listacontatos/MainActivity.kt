@@ -22,7 +22,6 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        geraListaDeContatos()
         setupToolBar(toolBar, "Lista de contatos", false)
         setupListView()
         setupOnClicks()
@@ -33,19 +32,13 @@ class MainActivity : BaseActivity() {
         ivBuscar.setOnClickListener { onClickBuscar() }
     }
 
-    private fun setupListView() {
+    private fun setupListView(){
         recyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = ContatoAdapter(this, ContatoSingleton.lista) { onClickItemRecyclerView(it) }
-        recyclerView.adapter = adapter
-    }
-
-    private fun geraListaDeContatos() {
-        onClickBuscar()
     }
 
     override fun onResume() {
         super.onResume()
-        adapter?.notifyDataSetChanged()
+        onClickBuscar()
     }
 
     private fun onClickAdd() {
@@ -61,8 +54,8 @@ class MainActivity : BaseActivity() {
 
     private fun onClickBuscar() {
         val busca = etBuscar.text.toString()
-        var listaFiltrada: List<ContatosVO> = mutableListOf()
 
+        var listaFiltrada: List<ContatosVO> = mutableListOf()
         try {
             listaFiltrada =
                 ContatoApplication.instance.helperDB?.buscarContatos(busca) ?: mutableListOf()
