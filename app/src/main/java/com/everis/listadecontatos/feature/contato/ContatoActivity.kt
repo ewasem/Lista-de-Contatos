@@ -18,24 +18,33 @@ class ContatoActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contato)
-        setupToolBar(toolBar, "Contato",true)
+        setupToolBar(toolBar, "Contato", true)
         setupContato()
         btnSalvarConato.setOnClickListener { onClickSalvarContato() }
     }
 
-    private fun setupContato(){
-        index = intent.getIntExtra("index",-1)
-        if (index == -1){
+    private fun setupContato() {
+
+        index = intent.getIntExtra("index", -1)
+        if (index == -1) {
             btnExcluirContato.visibility = View.GONE
             return
         }
-        var lista = ContatoApplication.instance.helperDB?.buscarContatos("$index", true) ?: return
-        var contato = lista.getOrNull(0) ?: return
-        etNome.setText(contato.nome)
-        etTelefone.setText(contato.telefone)
+        progress_cont.visibility = View.VISIBLE
+        Thread(Runnable {
+            var lista =
+                ContatoApplication.instance.helperDB?.buscarContatos("$index", true) ?: return@Runnable
+            var contato = lista.getOrNull(0) ?: return@Runnable
+            runOnUiThread {
+                etNome.setText(contato.nome)
+                etTelefone.setText(contato.telefone)
+                progress_cont.visibility = View.GONE
+            }
+        }).start()
     }
 
-    private fun onClickSalvarContato(){
+    private fun onClickSalvarContato() {
+        progress_cont.visibility = View.VISIBLE
         val nome = etNome.text.toString()
         val telefone = etTelefone.text.toString()
         val contato = ContatosVO(
@@ -43,18 +52,29 @@ class ContatoActivity : BaseActivity() {
             nome,
             telefone
         )
-        if(index == -1) {
-            ContatoApplication.instance.helperDB?.salvarContato(contato)
-        }else{
-            ContatoApplication.instance.helperDB?.updateContato(contato)
-        }
-        finish()
+        Thread(Runnable {
+            if (index == -1) {
+                ContatoApplication.instance.helperDB?.salvarContato(contato)
+            } else {
+                ContatoApplication.instance.helperDB?.updateContato(contato)
+            }
+            runOnUiThread {
+                progress_cont.visibility = View.GONE
+                finish()
+            }
+        }).start()
     }
 
     fun onClickExcluirContato(view: View) {
-        if(index > -1){
-            ContatoApplication.instance.helperDB?.deletarContato(index)
-            finish()
-        }
+        progress_cont.visibility = View.VISIBLE
+        Thread(Runnable {
+            if (index > -1) {
+                ContatoApplication.instance.helperDB?.deletarContato(index)
+                runOnUiThread {
+                    progress_cont.visibility = View.GONE
+                    finish()
+                }
+            }
+        }).start()
     }
 }
